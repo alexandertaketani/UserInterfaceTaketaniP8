@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,12 +11,16 @@ public class GameManager : MonoBehaviour
     private float spawnRate = 1.0f;
     private int score;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI gameOverText;
+    public bool isGameActive;
+    public Button restartButton;
+    public GameObject titleScreen;
+    public TextMeshProUGUI livesText;
+    private int lives;
 
     void Start()
     {
-        StartCoroutine(SpawnTarget());
-        score = 0;
-        UpdateScore(0);
+
     }
 
     // Update is called once per frame
@@ -25,7 +31,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator SpawnTarget()
     {
-        while (true)
+        while (isGameActive)
         {
             yield return new WaitForSeconds(spawnRate);
             int index = Random.Range(0, targets.Count);
@@ -37,5 +43,41 @@ public class GameManager : MonoBehaviour
     {
         score += scoreToAdd;
         scoreText.text = "Score: " + score;
+    }
+
+    public void UpdateLives(int livesToChange)
+    {
+        lives += livesToChange;
+        livesText.text = "Lives: " + lives;
+        if (lives <= 0)
+        {
+            GameOver();
+        }
+    }
+
+    public void GameOver()
+    {
+        gameOverText.gameObject.SetActive(true);
+        restartButton.gameObject.SetActive(true);
+
+        isGameActive = false;
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void StartGame(int difficulty)
+    {
+        isGameActive = true;
+        score = 0;
+        spawnRate /= difficulty;
+
+        StartCoroutine(SpawnTarget());
+        UpdateScore(0);
+        UpdateLives(3);
+
+        titleScreen.gameObject.SetActive(false);
     }
 }
